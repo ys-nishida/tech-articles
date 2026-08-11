@@ -1,13 +1,14 @@
 ---
-title: "test"
+title: "test-nishida-article"
 emoji: "🙆"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["test"]
 published: false
+publication_name: "dgtech"
 ---
 
-# タイトル
+# test nishida
 * hoge 
   * test
 
-# あいうえお
+# これで連携は出来ている？
