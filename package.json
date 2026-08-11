@@ -1,0 +1,24 @@
+{
+  "name": "tech-articles",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ys-nishida/tech-articles.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ys-nishida/tech-articles/issues"
+  },
+  "homepage": "https://github.com/ys-nishida/tech-articles#readme",
+  "dependencies": {
+    "zenn-cli": "^0.5.2"
+  }
+}
