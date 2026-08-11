@@ -4,7 +4,7 @@ emoji: "🙆"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["test"]
 published: false
-publication_name: "dgtech"
+#publication_name: "dgtech"
 ---
 
 # test nishida
