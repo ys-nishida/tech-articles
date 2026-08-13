@@ -47,12 +47,11 @@ AmazonQからslackに通知もらって、findings調べて、、、っていう
 このように通知されて、一次調査を完了させます。対応のところはまだ自動化していませんが、できないこともなさそうですね
 ![slackの通知](https://static.zenn.studio/user-upload/fc397922f7e9-20260806.png)
 
-# コスト/トークンなど
+# コストなど
 * AWS : 現在、GuardDuty Investigationはプレビューのためコストはかかりません。GAした際は、要確認です。
-* Claude Tag :  
-
-モデルは sonnet を利用
-
+* Claude Tag : $3~$4 / 1解析という感じでした
+  * 初回のGuardDutyからのfindingsは少し高額に出たりするかもしれません
+  * モデルは sonnet 5 を使っています
 
 # 構成詳細
 ### インフラ構成詳細
@@ -124,6 +123,59 @@ sequenceDiagram
 GuardDuty は継続中の Finding を既定6時間ごとに再送するため、慢性化した事象では同じ通知が繰り返し届きます。
 ```
 
+* Claude Tag 側には、このような設定をしています
+  * Access bundle 名  : [任意の名前]
+  * Credential type     : AWS SigV4
+  * Access key ID  / Secret : AWS の IAMユーザを発行し、そのcredentialを渡しています
+  * Allowed websites  : 入力したら他の場所をクリックすると、続きを入力できます
+  ```
+    guardduty.ap-northeast-1.amazonaws.com
+    cloudtrail.ap-northeast-1.amazonaws.com
+    ec2.ap-northeast-1.amazonaws.com
+    sts.ap-northeast-1.amazonaws.com
+    iam.amazonaws.com
+  ```
+
+* AWS の Eventbridge でメンションを作っています。文字列ではなく、"Uxxx" のようなユーザIDです
+  * IDがわからない場合は、slack で claude に聞けば教えてくれます
+
+```terraform
+resource "aws_cloudwatch_event_target" "notify_claude" {
+  rule = aws_cloudwatch_event_rule.notify_claude.name
+  arn  = local.sns_topic_arn
+
+  # Amazon Q in chat applications の custom notification schema に整形する
+  input_transformer {
+    input_paths = {
+      id       = "$.detail.id"
+      type     = "$.detail.type"
+      severity = "$.detail.severity"
+      account  = "$.detail.accountId"
+      region   = "$.region"
+    }
+
+    # jsonencode は山括弧を Unicode エスケープする（"<id>" → "<id>"）。EventBridge は
+    # エスケープ後の文字列からプレースホルダを探すため置換が起きず、<id> 等が literal で配信される。
+    # エンコード後に山括弧へ戻す
+    input_template = replace(replace(jsonencode({
+      version = "1.0"
+      source  = "custom"
+      content = {
+        textType = "client-markdown"
+        title    = ":rotating_light: GuardDuty <type> (severity <severity>) / account <account>"
+        # 手順・報告フォーマット・インジェクション対策はチャンネルスコープの custom instructions 側に置く
+        # （description はチャンネルに全文表示されるため、Claude が API を叩くのに必要な id と region のみ）
+        description = "[@ClaudeのユーザID] finding `<id>`（region: <region>）をトリアージしてください。"
+      }
+      metadata = {
+        # 同一 Finding の通知を Slack のスレッドにまとめる
+        threadId = "<id>"
+      }
+    }), "\\u003c", "<"), "\\u003e", ">")
+  }
+}
+```
+
 # 学んだこと
 * bot 投稿の `@Claude` メンションで起動可能（lambda不要）
   * ただし、メンションは ID 形式が必須。プレーンな `@Claude` は反応しない
@@ -133,7 +185,7 @@ GuardDuty は継続中の Finding を既定6時間ごとに再送するため、
 * Claude Tag は諦めがちなので、プロンプトでできることを明示する事
   * CW Trail の権限が一部足りないと、Trail 全部は使えない、と自身のメモリに書き込んでしまう
   * investigation がfindingに閉じた調査しか出来ない事を、自分の権限の制約と誤解してメモリに書き込んでしまう
-* コストは
+* findings はパターンが画一的なのでキャッシュがかなり効く部類。コスト効率は比較的良い
 
 # 他の活用方法
 他にも活用できる構成パターンはたくさんあります。今回は investigation を直接呼んでいましたが、AgentCore Gateway と組み合わせてツールを呼び出す形式(余談の一部構成)にすると複合的なパターンをこなせます、例えば以下が挙げられます
@@ -141,7 +193,7 @@ GuardDuty は継続中の Finding を既定6時間ごとに再送するため、
 * 簡単な申請手続きを自動化（Wiz接続, HCP Terraform Org 払出 etc）
 * 標準ナレッジを参照させた設計書のレビューと修正指示
 
-# 余談
+# 終わりに
 * 当初は、Claude Tag を使わず、AgentCoreハーネスを使うつもりで設計していました。
 ![当初案](https://static.zenn.studio/user-upload/afef225908fc-20260806.png)
 
