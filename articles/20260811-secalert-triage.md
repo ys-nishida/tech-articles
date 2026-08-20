@@ -1,10 +1,10 @@
 ---
-title: "セキュリティアラートの自動1次トリアージ（Claude tag と GuardDuty Investigationを使ってみる）"
+title: "Claude Tag+Amazon GuardDuty Investigation Agentでセキュリティアラートの一次トリアージを自動化"
 emoji: "🔍"
 type: "tech"
 topics:
   - "aws"
-  - "slack"
+  - "Slack"
   - "sre"
   - "guardduty"
   - "claude"
@@ -15,8 +15,8 @@ publication_name: "dgtech"
 # はじめに
 こんにちわ、SRE室の西田です。
 SREをしていると、GuardDutyのセキュリティアラートって大量にきたりしませんか？
-AmazonQからslackに通知もらって、findings調べて、、、っていうあの作業、単純ですけど割と手間！！
-ということで、1次調査を自動化してみました。
+AmazonQからSlackに通知もらって、Findings調べて、、、っていうあの作業、単純ですけど割と手間！！
+ということで、Claude Tag + Amazon GuardDuty Investigation Agent を組み合わせて、セキュリティアラートの一次トリアージを自動化してみました。
 
 ## 書くこと書かないこと
 * 書くこと：仕組みの話
@@ -45,13 +45,14 @@ AmazonQからslackに通知もらって、findings調べて、、、っていう
 例えば、普段接続しない箇所からのコンソール接続時によく出る通知があります
 ![Findings](https://static.zenn.studio/user-upload/a38459768102-20260806.png)
 このように通知されて、一次調査を完了させます。対応のところはまだ自動化していませんが、できないこともなさそうですね
-![slackの通知](https://static.zenn.studio/user-upload/fc397922f7e9-20260806.png)
+![Slackの通知](https://static.zenn.studio/user-upload/fc397922f7e9-20260806.png)
 
 # コストなど
 * AWS : 現在、GuardDuty Investigationはプレビューのためコストはかかりません。GAした際は、要確認です。
+  * ただし、[プレビュー期間なので制限](https://aws.amazon.com/jp/blogs/security/introducing-the-amazon-guardduty-investigation-agent-on-demand-ai-powered-threat-assessment/)があり、10回/日、100件/アカウント(失敗は調査数に含まれない)です
 * Claude Tag : $3~$4 / 1解析という感じでした
-  * 初回のGuardDutyからのfindingsは少し高額に出たりするかもしれません
-  * モデルは sonnet 5 を使っています
+  * 初回のGuardDutyからのFindingsは少し高額に出たりするかもしれません
+  * モデルは Sonnet 5 を使っています
 
 # 構成詳細
 ### インフラ構成詳細
@@ -137,7 +138,7 @@ GuardDuty は継続中の Finding を既定6時間ごとに再送するため、
   ```
 
 * AWS の Eventbridge でメンションを作っています。文字列ではなく、"Uxxx" のようなユーザIDです
-  * IDがわからない場合は、slack で claude に聞けば教えてくれます
+  * IDがわからない場合は、Slack で claude に聞けば教えてくれます
 
 ```terraform
 resource "aws_cloudwatch_event_target" "notify_claude" {
@@ -180,16 +181,16 @@ resource "aws_cloudwatch_event_target" "notify_claude" {
 * bot 投稿の `@Claude` メンションで起動可能（lambda不要）
   * ただし、メンションは ID 形式が必須。プレーンな `@Claude` は反応しない
 * AWS 公式 MCP は使えない。Agent Proxy の SigV4 が `amazonaws.com` ホストのみのため、AWS CLI 直叩き経路になる
-* investigation と自力分析は補完関係。investigation は渡されたfindingsのみに閉じた解析。横断的な解析は出来ない。
+* investigation と自力分析は補完関係。investigation は渡されたFindingsのみに閉じた解析。横断的な解析は出来ない。
 * 委任管理者 detector を通せば、IAM ポリシーを detector ARN 限定に絞ったままアカウント横断検索可能
 * Claude Tag は諦めがちなので、プロンプトでできることを明示する事
-  * CW Trail の権限が一部足りないと、Trail 全部は使えない、と自身のメモリに書き込んでしまう
+  * CloudTrail の権限が一部足りないと、Trail 全部は使えない、と自身のメモリに書き込んでしまう
   * investigation がfindingに閉じた調査しか出来ない事を、自分の権限の制約と誤解してメモリに書き込んでしまう
-* findings はパターンが画一的なのでキャッシュがかなり効く部類。コスト効率は比較的良い
+* Findings はパターンが画一的なのでキャッシュがかなり効く部類。コスト効率は比較的良い
 
 # 他の活用方法
 他にも活用できる構成パターンはたくさんあります。今回は investigation を直接呼んでいましたが、AgentCore Gateway と組み合わせてツールを呼び出す形式(余談の一部構成)にすると複合的なパターンをこなせます、例えば以下が挙げられます
-* AWS DevOps Agent と組み合わせて、障害調査の自動化 & slack で復旧指示
+* AWS DevOps Agent と組み合わせて、障害調査の自動化 & Slack で復旧指示
 * 簡単な申請手続きを自動化（Wiz接続, HCP Terraform Org 払出 etc）
 * 標準ナレッジを参照させた設計書のレビューと修正指示
 
@@ -199,3 +200,9 @@ resource "aws_cloudwatch_event_target" "notify_claude" {
 
 AgentCoreハーネスの検証をしてみようと思っていたのですが、構成上 Claude Tag の方が早く出来そうだったので、そっちを先に試してみることにしました。
 結果、Slack 上で追加で調査指示を出したり、考察させたりできるので、Claude Tag を使うのはとても利便性が高いように感じます。かなり使い勝手が良い機能だと思いました
+
+# 参考記事
+[What is Claude Tag?](https://support.claude.com/en/articles/15594475-what-is-claude-tag)
+[Claude Tag overview](https://claude.com/docs/claude-tag/overview)
+[GuardDuty investigation agent 紹介](https://aws.amazon.com/jp/blogs/security/introducing-the-amazon-guardduty-investigation-agent-on-demand-ai-powered-threat-assessment/)
+[GuardDuty公式ドキュメント](https://aws.amazon.com/jp/documentation-overview/guardduty/)
