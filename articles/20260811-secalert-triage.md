@@ -8,7 +8,7 @@ topics:
   - "sre"
   - "guardduty"
   - "claude"
-published: false
+published: true
 publication_name: "dgtech"
 ---
 
