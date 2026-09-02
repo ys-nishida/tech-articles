@@ -27,7 +27,7 @@ publication_name: "dgtech"
 * 書かないこと:
   * PCNE の出題内容（Appendix で分類までは書きますが、内容には焦点は当てません）
 
-# 前段のお話 : PCNE（Professional Cloud Network Engineer）について
+# PCNE（Professional Cloud Network Engineer）とは
 ![Professional Cloud Network Engineer](https://raw.githubusercontent.com/ys-nishida/tech-articles/refs/heads/main/articles/data/20260821-google-pnce-exam/image.png =180x)
 
 * Google Cloud の認定資格の構造は[こちらに](https://cloud.google.com/learn/certification)
