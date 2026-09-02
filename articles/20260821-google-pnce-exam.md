@@ -99,12 +99,12 @@ Google Cloud との差分を中心に、学習していくのが効率が良い�
 * 外部向けのサービス開発ではなく、社内システムのリフトも力を入れ始めた印象を持ちました
   * GKE の VPC-native cluster における IP 大量消費問題への解決方法
     * 随分前から現場では同じことを構成していましたが、ip-masq-agent の ConfigMap を設定することで、宛先に応じて NAT する IP を変える、という話です。
-      * 対外部 pod -> Cloud NAT -> インターネット
-      * 対内部 pod -> Node IP -> 内部のサーバ
+      * 対外部 pod → Cloud NAT → インターネット
+      * 対内部 pod → Node IP → 内部のサーバ
     * Routes-based cluster をサポートしなくなった当初は、GKE 用のエイリアス IP の CIDR 範囲が自動的に Peering で経路広報されてしまい、10系アドレス宛の通信が吸い取られる、という事故が結構ありましたよね
   * オンプレとの相互名前解決の話も多かったです
-    * Google Cloud -> オンプレ : Forwarder を設定し、`35.199.192.0/19` を内部に広報する & FW を開ける
-    * オンプレ -> Google Cloud : インバウンドサーバーポリシーを作成し、条件付きフォワーダを設定
+    * Google Cloud → オンプレ : Forwarder を設定し、`35.199.192.0/19` を内部に広報する & FW を開ける
+    * オンプレ → Google Cloud : インバウンドサーバーポリシーを作成し、条件付きフォワーダを設定
   * ただ、そうだとすると、内部 HTTPS LB が IP 制限をかけられないという話は未だ健在なので、そこはなんとかして欲しいですね
     * https://qiita.com/ys_nishida/items/dc57862f18865750d8e6
 
@@ -133,7 +133,7 @@ Google Cloud との差分を中心に、学習していくのが効率が良い�
   * pod からの通信 or pod への通信ができない場合の原因
 
 ### PSC関連
-* Private Google Access -> PSC が推奨となっているケース
+* Private Google Access → PSC が推奨となっているケース
 * GKE Control Plane や、他プロジェクトのサービスへのアクセスなど
 
 ### DNS関連
