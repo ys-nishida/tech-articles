@@ -25,7 +25,7 @@ publication_name: "dgtech"
   * 資格対策で Claude を利用してみて得られた知見・改善点
   * PCNE の出題傾向から感じた目指している姿と、その背景の歴史的な話
 * 書かないこと:
-  * PCNE の出題内容（Appendix で分類までは書きますが、内容そのものには焦点は当てません）
+  * PCNE の出題内容（Appendix で分類までは書きますが、内容には焦点は当てません）
 
 # 前段のお話 : PCNE（Professional Cloud Network Engineer）について
 ![Professional Cloud Network Engineer](https://raw.githubusercontent.com/ys-nishida/tech-articles/refs/heads/main/articles/data/20260821-google-pnce-exam/image.png =180x)
