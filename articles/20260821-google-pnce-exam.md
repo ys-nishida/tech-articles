@@ -45,7 +45,7 @@ publication_name: "dgtech"
 | ③ 試験形式（シナリオ+4択）で出題させる | ④ 解説を根掘り葉掘り聞く |
 | ![試験形式での出題](https://raw.githubusercontent.com/ys-nishida/tech-articles/refs/heads/main/articles/data/20260821-google-pnce-exam/sample-3.png) | ![解説の深掘り](https://raw.githubusercontent.com/ys-nishida/tech-articles/refs/heads/main/articles/data/20260821-google-pnce-exam/sample-4.png) |
 
-### よかった点
+### 良かった点
 * 疑問に感じたこと、なんでそういう回答になるのか、他の選択肢にしたらどういうことになるのか？などが、根掘り葉掘り聞けます
 * これはかなり機能に対して解像度が上がりました。わからないところだけをピンポイントで確認できるので、時短できます
 
