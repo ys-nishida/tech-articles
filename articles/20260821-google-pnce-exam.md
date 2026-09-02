@@ -109,7 +109,7 @@ Google Cloud との差分を中心に、学習していくのが効率が良い�
     * https://qiita.com/ys_nishida/items/dc57862f18865750d8e6
 
 ### その他
-* PCA（Professional Cloud Architect）の更新の際は、半分以上が生成AIの問題だったんです。ですが、PCNE は生成AIの出題が全くありませんでした。Vertex AI との通信の秘匿化やレート制限などの構造を問う問題はあってもよかったと思います。
+* PCA（Professional Cloud Architect）の更新の際は、半分以上が生成AIの問題だったんです。ですが、PCNE は生成AIの出題がありませんでした。Vertex AI との通信の秘匿化やレート制限などの構造を問う問題はあってもよかったと思います。
 
 # まとめ
 * Claude を活用し大幅に時短しました（実働12時間 → 3-4時間）
