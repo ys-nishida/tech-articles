@@ -12,10 +12,9 @@ publication_name: "dgtech"
 
 # はじめに
 こんにちは、SRE室の西田です
-今回は、Google Cloud の Professional Cloud Network Engineer（= PCNE）の資格更新をしてきました
-資格対策は今まで模擬試験を軸にやってきましたが、子どもの中学受験のフォローから気づきを得て、今回は生成AIを活用しました
-結果、これまで実働12時間ほどかかっていた対策が、3-4時間で終わりました。その体験談をまとめます
-ついでに、試験はそのプロダクトが何を（どこを）目指しているのか？を感じ取れる良い機会なので、私が感じた点も共有します
+今回は、Google Cloud の Professional Cloud Network Engineer（= PCNE）の資格更新をしてきました。資格対策は今まで模擬試験を軸にやってきましたが、子どもの中学受験のフォローから気づきを得て、今回は生成AIを活用しました。
+* 結果、これまで実働12時間ほどかかっていた対策が、3-4時間で終わりました。その体験談をまとめます
+* ついでに、試験はそのプロダクトが何を（どこを）目指しているのか？を感じ取れる良い機会なので、私が感じた点も共有します
 
 # 想定読者
 * クラウドのネットワークに興味がある方
@@ -29,7 +28,7 @@ publication_name: "dgtech"
   * PCNE の出題内容（Appendix で分類までは書きますが、内容そのものには焦点は当てません）
 
 # 前段のお話 : PCNE（Professional Cloud Network Engineer）について
-![Professional Cloud Network Engineer](https://raw.githubusercontent.com/ys-nishida/tech-articles/refs/heads/main/articles/data/20260821-google-pnce-exam/image.png)
+![Professional Cloud Network Engineer](https://raw.githubusercontent.com/ys-nishida/tech-articles/refs/heads/main/articles/data/20260821-google-pnce-exam/image.png =180x)
 
 * Google Cloud の認定資格の構造は[こちらに](https://cloud.google.com/learn/certification)
 * AWS の Advanced Networking - Specialty（廃止予定）の Google Cloud 版の資格です
@@ -116,11 +115,11 @@ Google Cloud との差分を中心に、学習していくのが効率が良い�
 # まとめ
 * 生成AIに出題者をやってもらうことで、実働12時間ほどかかっていた資格対策が、3-4時間で終わりました
 * 効いたのは、範囲を絞る2つの軸です
-  * 前回受験からの差分 : 試験ガイドの改訂と製品アップデートから、狙われる領域を割り出す
-  * 自分のバックグラウンド : 知っていることは飛ばし、知らないことだけをピンポイントで潰す
+  * 前回受験からの差分 : 試験の改訂と製品アップデートから、狙われる領域を割り出す
+  * 自分のバックグラウンド : 理解が浅いところだけをピンポイントで潰す
 * ただし、プロンプトを作り込まないと作問バイアスが出るので、そこだけは手を抜けません
-* そして資格対策は、そのプロダクトが今どこを目指しているかを読み取る良い機会でもあります
-  * 今回で言えば、企業の WAN の代替と、社内システムのリフトでした
+* そして資格対策はそのプロダクトが今どこを目指しているかを読み取る良い機会でもあります
+  * 今回で言えば、企業の WAN の代替と、社内システムのリフト
 * 当社では Google Cloud の利用はあまり多くないですが、BigQuery を中心としたワークロードはそれなりに存在するので、社内で有識者が増えてくるといいな、と思ってついでに記事にしてみました！資格補助もしてもらえるので、取得しやすい環境が整っています！
 
 # Appendix : ざっくり出題された問題を記載
