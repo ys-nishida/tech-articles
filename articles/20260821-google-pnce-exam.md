@@ -25,7 +25,7 @@ publication_name: "dgtech"
   * PCNE の出題内容(ざっくりappendixでは書きますが、そこに焦点は当てません)
 
 # 前段のお話 : PCNE(Professional Cloud Network Engineer)について
-![Professional Cloud Network Engineer](https://github.com/ys-nishida/tech-articles/tree/main/articles/data/20260821-google-pnce-exam/image.png)
+![Professional Cloud Network Engineer](https://raw.githubusercontent.com/ys-nishida/tech-articles/refs/heads/main/articles/data/20260821-google-pnce-exam/image.png)
 
 * Google Cloud の認定資格の構造は[こちらに](https://cloud.google.com/learn/certification)
 * AWS の speciality Networking （廃止予定）のGoogle Cloud 版の資格です
