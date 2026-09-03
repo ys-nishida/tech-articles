@@ -12,7 +12,7 @@ publication_name: "dgtech"
 
 # はじめに
 こんにちは、SRE室の西田です
-今回は、Google Cloud の Professional Cloud Network Engineer（= PCNE）の資格更新をしてきました。資格対策は今まで模擬試験を軸にやってきましたが、子どもの中学受験のフォローから気づきを得て、今回は生成AIを活用しました。
+今回は、Google Cloud の Professional Cloud Network Engineer（= PCNE）の資格更新をしてきました。資格対策は今まで模擬試験を軸にやってきましたが、子どもの中学受験のフォローから気づきを得て、今回は生成AIを活用しました
 * 結果、これまで実働12時間ほどかかっていた対策が、3-4時間で終わりました。その体験談をまとめます
 * ついでに、試験はそのプロダクトが何を（どこを）目指しているのか？を感じ取れる良い機会なので、私が感じた点も共有します
 
@@ -98,7 +98,7 @@ Google Cloud との差分を中心に、学習していくのが効率が良い�
 ### 社内システムのリフト
 * 外部向けのサービス開発ではなく、社内システムのリフトも力を入れ始めた印象を持ちました
   * GKE の VPC-native cluster における IP 大量消費問題への解決方法
-    * 随分前から現場では同じことを構成していましたが、ip-masq-agent の ConfigMap を設定することで、宛先に応じて NAT する IP を変える、という話です。
+    * 随分前から現場では同じことを構成していましたが、ip-masq-agent の ConfigMap を設定することで、宛先に応じて NAT する IP を変える、という話です
       * 対外部 pod → Cloud NAT → インターネット
       * 対内部 pod → Node IP → 内部のサーバ
     * Routes-based cluster をサポートしなくなった当初は、GKE 用のエイリアス IP の CIDR 範囲が自動的に Peering で経路広報されてしまい、10系アドレス宛の通信が吸い取られる、という事故が結構ありましたよね
@@ -109,7 +109,7 @@ Google Cloud との差分を中心に、学習していくのが効率が良い�
     * https://qiita.com/ys_nishida/items/dc57862f18865750d8e6
 
 ### その他
-* PCA（Professional Cloud Architect）の更新の際は、半分以上が生成AIの問題だったんです。ですが、PCNE は生成AIの出題がありませんでした。Vertex AI との通信の秘匿化やレート制限などの構造を問う問題はあってもよかったと思います。
+* PCA（Professional Cloud Architect）の更新の際は、半分以上が生成AIの問題だったんです。ですが、PCNE は生成AIの出題がありませんでした。Vertex AI との通信の秘匿化やレート制限などの構造を問う問題はあってもよかったと思います
 
 # まとめ
 * Claude を活用し大幅に時短しました（実働12時間 → 3-4時間）
