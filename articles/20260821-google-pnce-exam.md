@@ -6,7 +6,7 @@ topics:
   - "googlecloud"
   - "network"
   - "claude"
-published: false
+published: true
 publication_name: "dgtech"
 ---
 
