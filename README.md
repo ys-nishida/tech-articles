@@ -6,6 +6,7 @@
 cd ~/tech-articles
 npx zenn new:article --slug 20260811-secalert-triage
 npx zenn new:article --slug 20260821-google-pnce-exam
+npx zenn new:article --slug 20260930-proxy-on-oci
 
 👇  新しい本を作成する
 npx zenn new:book
