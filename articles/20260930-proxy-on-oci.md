@@ -36,7 +36,7 @@ published: false
 
 # 実装内容
 * PCの設定 : 前回記事と変わらず、プロキシに Pac ファイルを指定
-![Proxy setting](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/PC_proxy_setting.png =180x)
+![Proxy setting](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/PC_proxy_setting.png?raw=true)
 
 * PACファイルの内容
 
@@ -82,9 +82,9 @@ function FindProxyForURL(url, host)
   * ずっとローカル実行していた派閥なので、フォルダ分離だけでは出来なくて、各フォルダとworksaceを揃えなければ同じProjectで構成できないことを知りました
   * variable は、どちらも利用するため、共通化しています（=分けるの面倒だった）
 
-![HCP_Terraform_workspace](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/hcp_terraform_workspace.png =180x)
+![HCP_Terraform_workspace](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/hcp_terraform_workspace.png?raw=true)
 
-![HCP_Terraform_variable_set](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/hcp_terraform_variable_set.png =180x)
+![HCP_Terraform_variable_set](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/hcp_terraform_variable_set.png?raw=true)
 
 # 苦労したポイント
 * 上記の実装になった背景と、苦労したポイントを書いておきます
