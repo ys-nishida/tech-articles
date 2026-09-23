@@ -17,7 +17,7 @@ published: false
 
 # 本記事の概要
 * 要件 : 子供の youtube 視聴は『生活の最低限やるべきことをやってから』にしたい
-* 設計 : Pac ファイルで宛先を Proxy に設定し、その Proxy の起動停止で見れる見れないを制御
+* 設計 : Pac で youtube の宛先を Proxy にして、その Proxy の起動停止で見れる見れないを制御
 * 実装 : OCI Always free + HCP Terraform で無料＆簡単に運用
 
 # 書いた動機
