@@ -34,31 +34,9 @@ published: false
 * squid コンテナ
 * HCP Terraform
 
-# 苦労したポイント
-## 予約ipを消さなくさせる
-* OCI のリソースが public ip 発行を巻き込む
-  * user dataでアタッチしようとして、ociがない
-  * ip がないから oci を install 出来ない、、、
-* じゃあ逆に、ephemeral で ip を払い出して、user data 内でアタッチしようとすると
-  * oci の権限管理の壁 タグであれこれ設定が必要
-    * 頑張った！
-  * でも user data の中で、oci login コマンドが必要そう
-    * ブラウザが必要そう、、、完全ワンコマンドが無理。。諦めた
-
-* 発行済 IP のアタッチは web コンで人がやる。
-* ssh ログインして、start up sh を動かしてセットアップを自動化させる
-
-* いっその事 hcp terraform やめて、gha でやるのはどうだったのだろうか？
-  * 手動実行前提なら、gha 内でコマンド実行すればよかったのではないだろうか？
-  * 趣旨から外れるのでいったん没にしたが、この案でもよかったのかもしれない
-
-## 認証やめた
-* かえって脆弱
-
-
 # 実装内容
 * PCの設定 : 前回記事と変わらず、プロキシに Pac ファイルを指定
-!画像
+![Proxy setting](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/PC_proxy_setting.png =180x)
 
 * PACファイルの内容
 
@@ -74,7 +52,7 @@ function FindProxyForURL(url, host)
         return "DIRECT";
 
     // Proxy 経由の通信。動画配信は別のFQDN
-    var proxy = "PROXY [予約 IP アドレス]:10080";
+    var proxy = "PROXY [OCI 予約 IP アドレス]:10080";
     var domains = [
         "youtube.com",
         "*.youtube.com",
@@ -102,38 +80,61 @@ function FindProxyForURL(url, host)
 ### HCP Terraform の構成
 * 実装に合わせて、common と proxy-vm は、workspace を分離する形で構成しています
   * ずっとローカル実行していた派閥なので、フォルダ分離だけでは出来なくて、各フォルダとworksaceを揃えなければ同じProjectで構成できないことを知りました
-  * variable は、どちらも利用するため、共通化しています（分けるの面倒だった）
-! 画像を2つ
+  * variable は、どちらも利用するため、共通化しています（=分けるの面倒だった）
 
+![HCP_Terraform_workspace](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/hcp_terraform_workspace.png =180x)
 
-# やろうとしてできなかったこと。頑張ったけどあきらめた！
-* immutable
-  * 毎回プロビジョニングするのはあまりに時間や計算機コストが多すぎた
-* terraform apply 一発化
-  * oracle vm を使っても、oci コマンドが入っていない
-  * oci コマンドが入ってないから、ipアドレスをアタッチ出来ない
-  * ip アドレスをアタッチ出来ないからoci コマンドがインストールできない
-  * 鶏卵問題、、、
+![HCP_Terraform_variable_set](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/hcp_terraform_variable_set.png =180x)
+
+# 苦労したポイント
+* 上記の実装になった背景と、苦労したポイントを書いておきます
+
+## 予約 Public IP を VM 再作成でも保持させる事！
+* これが本当に悩みました。すごい悩みました、この記事で一番の苦労点です。
+* OCI の予約 Public IP のリソースの構造上、予約IP側にアタッチするVMを持つ構造なんです。以下の構造
+```
+resource "oci_core_public_ip" "test_public_ip" {
+	#Required
+	compartment_id = var.compartment_id
+	lifetime = "RESERVED"
+  ...
+
+  private_ip_id = [VM の Private IP の OCID を指定する]
+}
+```
+* 普通にコードを書くと、VM作成後に Public IP が作られる構造になります。よって、VM を削除すると public IP も巻き込まれて消える構造になっています
+  * AWS/GCP と違って、**attachment リソースがない**ので巻き込まれて消えます
+* 業務でもこのユースケースはよくあり、困ったことがなかったのですが、OCI はなかなかに難しいですね
+
+#### 作戦1 : VM 作成時の起動スクリプト(user data)でコマンドでアタッチすればいいのでは？
+* 予約IPはアタッチせずに独立リソースにしておく。VM作成時のshでアタッチコマンドで自分でアタッチさせればいいのでは？ -> oci コマンドがインストールされていない！
+    * oci をインストールするコマンドを先に入れる -> public ip が付与されていないのでインストールできない
+      * NAT を作ればいいのでは？ -> 有料でした
+      * ephemeral public IP をアタッチしておけばいいのでは？ -> 今度は oci login が出来ない
+        * oci login は、ブラウザアクセスが必要そうだったので、全自動は無理そうでした
+    * oracle 純正の VM なら入っているのでは？ → 入ってませんでした。無料OSの中には該当なし
+* 起動スクリプト作戦は、すべての選択肢で行き詰ってしまいました
+
+#### 作戦2 : 外でコマンド実行すればいいのでは？GHA とか
+* HCP Terraform が、任意のコマンドを打てない事も問題でした。なので、GHA で完結させる案も有力かもしれません
+* GHA 使うなら、HCP Terraform を使う意味がなくなってきたので、趣旨から外れたため没にしました
+* が、結果的にはこの案が一番スマートだったかもしれません
+
+#### 作戦3 : apply だけで完結をあきらめる -> 採用
+* 発行済 IP のアタッチは web コンで人がやる。
+* ssh ログインして、start up sh を動かしてセットアップを自動化させる
+
+## 認証プロキシ化する
+* 無料で簡単に出来る範囲だと、Basic 認証を使う事になります。
+* ただ、プロキシの Basic 認証は、PWが平文でインターネットを通ることになります
+  * パケットキャプチャをすると普通に base64 decode すれば見れます
+* ID/PW をプロキシ専用のものを発行して、PC に PW を保存しておけば少しマシだとは思います。
+* 思いますが、利用者が子供だと考えた際、何か操作を間違えて認証プロンプトが出てきた際、普通に PC の ID/PW を入力してしまい、漏洩してしまうリスクがかなり高いと考えたため、結果的に脆弱になると考えて、没にしました
+
+# その他、やろうと思ったがあきらめたこと
+* 最初は、docker compose ではなく、VM リソースの作成・削除をスケジュール化する、を構想していました
+  * セットアップに時間がかかりすぎる事や、リソース枯渇に伴うエラー時の対応など、考慮点が多いので諦めました
+* terraform apply のみでセットアップ終了
+  * 上記の"苦労したポイント"の通りですが、諦めました
 * フローログ取得
-  * 想定しているipからしか来てないことを定期的に確認しようと思ったが、、
-* 権限系
-  * user data で、バケットから sh を取ってくる方法
-  * タグでやる必要がある
-  * そのタグをプロビジョニングするのに強い権限が必要
-  * hcp terraform に協力な権限を付与
-  * 嫌だ、、、
-
-# proxy on oci
-
-```
-# プロビジョニングも出来なかった
-    # squid.conf を読み込んで、setup_squid.sh.tftpl へ流し込む
-    # 初期セットアップはしない。やっぱり VM 上の自動セットアップは複雑
-    # user_data = base64encode(templatefile("./user_data/setup_squid.sh.tftpl", {
-    #   proxy_user = "myuser"
-    #   proxy_pass = "YourSuperSecurePassword123!"
-    #   squid_conf = file("./user_data/squid.conf")
-    #   # proxy_reserved_ip_id = oci_core_public_ip.proxy_reserved_ip.id
-    #   proxy_reserved_ip_id = local.common.proxy_reserved_ip_id
-    # }))
-```
+  * 想定しているipからしか来てないことを定期的に確認しようと思いましたが、有料なので諦めました
