@@ -1,0 +1,191 @@
+<title>Proxy on OCI 構成図</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #FAFAF7;
+    --panel: #F0F2F0;
+    --ink: #1F2A2E;
+    --muted: #6B7780;
+    --line: #C3CACD;
+    --accent: #C74634;
+    --font-body: "IBM Plex Sans JP", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14181B;
+      --panel: #1C2327;
+      --ink: #E6E9EA;
+      --muted: #97A2A8;
+      --line: #3A434A;
+      --accent: #E8705F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14181B;
+    --panel: #1C2327;
+    --ink: #E6E9EA;
+    --muted: #97A2A8;
+    --line: #3A434A;
+    --accent: #E8705F;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    padding-block: 32px 48px;
+    padding-inline: 16px;
+  }
+  main {
+    max-width: 960px;
+    margin-inline: auto;
+    display: grid;
+    gap: 20px;
+  }
+  header h1 {
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0 0 4px;
+    text-wrap: balance;
+  }
+  header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  figure {
+    margin: 0;
+    overflow-x: auto;
+  }
+  svg {
+    display: block;
+    width: 100%;
+    max-width: 920px;
+    height: auto;
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .mono { font-family: var(--font-mono); }
+  .muted { fill: var(--muted); }
+  .accent { fill: var(--accent); }
+  figcaption {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+</style>
+
+<main>
+  <header>
+    <h1>動画視聴制御 Proxy on OCI Always Free</h1>
+    <p>前回の「親が手動で Proxy を起動」を、OCI 上の cron に置き換えた構成</p>
+  </header>
+
+  <figure>
+    <svg viewBox="0 0 920 590" role="img"
+         aria-label="子供の PC は PAC に従い、YouTube 等の通信だけを OCI 上の Squid Proxy に送る。Proxy は cron で 19 時に起動し 21 時に停止する。OCI 側は HCP Terraform で構築し、予約 Public IP の VM への割当だけ手動。">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+        </marker>
+        <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+
+      <!-- ===== GitHub Gist : PAC ===== -->
+      <g stroke="currentColor" fill="none" stroke-width="1.4">
+        <rect x="40" y="40" width="170" height="120" rx="6"/>
+        <path d="M 98 78 H 146 L 160 92 V 146 H 98 Z"/>
+        <path d="M 146 78 V 92 H 160"/>
+      </g>
+      <text x="125" y="63" text-anchor="middle" font-weight="500">GitHub Gist</text>
+      <text x="129" y="124" text-anchor="middle" class="mono" font-size="11">proxy.pac</text>
+
+      <!-- ===== internet ===== -->
+      <path d="M 478 118 C 440 118 438 72 478 74 C 484 40 540 32 556 62 C 574 34 636 42 634 76 C 672 78 672 118 636 118 Z"
+            fill="var(--panel)" stroke="currentColor" stroke-width="1.4"/>
+      <text x="556" y="96" text-anchor="middle" font-weight="500">internet</text>
+
+      <!-- ===== 子供の PC ===== -->
+      <g stroke="currentColor" fill="none" stroke-width="1.4">
+        <rect x="60" y="400" width="130" height="82" rx="4"/>
+        <rect x="70" y="410" width="110" height="60" rx="2" stroke-width="0.8" stroke="var(--line)"/>
+        <line x1="125" y1="482" x2="125" y2="496"/>
+        <rect x="95" y="496" width="60" height="6" rx="2" fill="currentColor"/>
+      </g>
+      <text x="125" y="526" text-anchor="middle" font-weight="500">子供の PC（自宅）</text>
+
+      <!-- ===== OCI ===== -->
+      <rect x="410" y="200" width="460" height="215" rx="8" fill="var(--panel)" stroke="currentColor" stroke-width="1.4"/>
+      <text x="426" y="224" font-weight="500" letter-spacing="0.04em" font-size="11.5">OCI（Always Free）</text>
+
+      <!-- VM -->
+      <rect x="480" y="236" width="372" height="150" rx="6" fill="var(--bg)" stroke="currentColor" stroke-width="1.2"/>
+      <text x="492" y="376" class="muted" font-size="11">VM（Ubuntu）</text>
+
+      <!-- Squid -->
+      <rect x="500" y="256" width="130" height="96" rx="4" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <text x="565" y="278" text-anchor="middle" font-weight="500">Squid コンテナ</text>
+      <text x="565" y="300" text-anchor="middle" class="muted" font-size="10">whitelist で宛先を限定</text>
+      <text x="565" y="322" text-anchor="middle" class="muted" font-size="9.5">踏み台化された時の</text>
+      <text x="565" y="335" text-anchor="middle" class="muted" font-size="9.5">希釈化のため</text>
+
+      <!-- cron -->
+      <rect x="726" y="256" width="110" height="90" rx="4" fill="none" stroke="currentColor" stroke-width="1.2"/>
+      <text x="781" y="282" text-anchor="middle" font-weight="500">cron</text>
+      <text x="781" y="306" text-anchor="middle" class="mono" font-size="11">19:00 up</text>
+      <text x="781" y="325" text-anchor="middle" class="mono" font-size="11">21:00 down</text>
+
+      <!-- cron -> squid -->
+      <line x1="726" y1="312" x2="632" y2="312" stroke="currentColor" stroke-width="1.4" marker-end="url(#arrow)"/>
+      <text x="679" y="298" text-anchor="middle" class="mono muted" font-size="10">docker compose</text>
+
+      <!-- 予約 Public IP（OCI 境界をまたぐ入口） -->
+      <rect x="330" y="300" width="140" height="26" rx="13" fill="var(--bg)" stroke="var(--accent)" stroke-width="1.4"/>
+      <text x="400" y="317" text-anchor="middle" class="mono accent" font-size="11" font-weight="500">予約 Public IP :10080</text>
+      <line x1="470" y1="313" x2="498" y2="313" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#arrow-accent)"/>
+
+      <!-- NSG -->
+      <text x="426" y="402" class="muted" font-size="11">NSG : 自宅 IP → 10080 のみ許可</text>
+
+      <!-- ===== 子供 PC の 3 本の経路 ===== -->
+      <!-- PAC 取得 -->
+      <line x1="125" y1="400" x2="125" y2="166" stroke="currentColor" stroke-width="1.4" marker-end="url(#arrow)"/>
+      <text x="134" y="290" class="muted" font-size="11">PAC 取得</text>
+
+      <!-- それ以外は DIRECT -->
+      <line x1="185" y1="405" x2="478" y2="102" stroke="currentColor" stroke-width="1.4" marker-end="url(#arrow)"/>
+      <text x="322" y="244" text-anchor="end" class="muted" font-size="11">それ以外は DIRECT</text>
+
+      <!-- YouTube 等 → Proxy（制御対象） -->
+      <line x1="190" y1="440" x2="328" y2="316" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#arrow-accent)"/>
+      <text x="214" y="452" class="accent" font-size="11" font-weight="500">youtube.com 等</text>
+
+      <!-- Squid → internet -->
+      <line x1="566" y1="256" x2="556" y2="122" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#arrow-accent)"/>
+      <text x="580" y="180" class="accent" font-size="11">whitelist 宛のみ</text>
+
+      <!-- ===== HCP Terraform ===== -->
+      <rect x="540" y="482" width="270" height="62" rx="6" fill="none" stroke="currentColor" stroke-width="1.4"/>
+      <text x="675" y="506" text-anchor="middle" font-weight="500">HCP Terraform</text>
+      <text x="675" y="526" text-anchor="middle" class="mono muted" font-size="10.5">common ／ proxy-vm の 2 workspace</text>
+      <line x1="675" y1="482" x2="675" y2="418" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+      <text x="686" y="452" class="mono muted" font-size="10.5">terraform apply</text>
+
+      <!-- ===== 凡例 ===== -->
+      <g font-size="10.5" class="muted">
+        <line x1="40" y1="566" x2="72" y2="566" stroke="currentColor" stroke-width="1.4"/>
+        <text x="80" y="570" fill="var(--muted)">通信</text>
+        <line x1="130" y1="566" x2="162" y2="566" stroke="var(--accent)" stroke-width="1.8"/>
+        <text x="170" y="570" fill="var(--muted)">制御対象の通信（Proxy の起動中だけ通る）</text>
+        <line x1="420" y1="566" x2="452" y2="566" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4"/>
+        <text x="460" y="570" fill="var(--muted)">構築</text>
+      </g>
+    </svg>
+    <figcaption>
+      赤い経路が視聴制御の本体。PAC で振り分けた YouTube 等の通信は OCI 上の Squid を経由し、cron が 19 時に上げて 21 時に落とすので、その時間帯だけ通る。それ以外の通信は Proxy を通らない。OCI 側は HCP Terraform で構築するが、予約 Public IP を VM に割り当てる操作だけはコンソールで手動。
+    </figcaption>
+  </figure>
+</main>
