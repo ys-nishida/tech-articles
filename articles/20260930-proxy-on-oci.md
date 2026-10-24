@@ -67,7 +67,7 @@ function FindProxyForURL(url, host)
 ```
 
 ### OCI 側の実装
-* OCI の VM の上に、docker コンテナで squid を構築。cron で compose up/down(19時-21時)しています
+* OCI の VM の上に、docker コンテナで Squid を構築。cron で compose up/down(19時-21時)しています
 ```cron
 0 19 * * * ubuntu cd /home/ubuntu/proxy-on-oci/proxy-vm/docker-squid && /usr/bin/docker compose up -d
 0 21 * * * ubuntu cd /home/ubuntu/proxy-on-oci/proxy-vm/docker-squid && /usr/bin/docker compose down
@@ -101,17 +101,17 @@ resource "oci_core_public_ip" "test_public_ip" {
   private_ip_id = [VM の Private IP の OCID を指定する]
 }
 ```
-* 普通にコードを書くと、VM作成後に Public IP が作られる構造になります。よって、VM を削除すると public IP も巻き込まれて消える構造になっています
+* 普通にコードを書くと、VM作成後に Public IP が作られる構造になります。よって、VM を削除すると Public IP も巻き込まれて消える構造になっています
   * AWS/GCP と違って、**attachment リソースがない**ので巻き込まれて消えます
 * 業務でもこのユースケースはよくあり、AWS/GCP では困ったことがなかったのですが、OCI はなかなかに難しいですね
 
 #### 作戦1 : VM 作成時の起動スクリプト(user data)でコマンドでアタッチすればいいのでは？
 * 予約 IP を独立リソースにしておき、VM 起動時のスクリプトで自分にアタッチさせればいいのでは？ -> oci コマンドがインストールされていない！
-    * oci をインストールするコマンドを先に入れる -> public ip が付与されていないのでインストールできない
+    * oci をインストールするコマンドを先に入れる -> Public IP が付与されていないのでインストールできない
       * NAT を作ればいいのでは？ -> 有料でした
-      * ephemeral public IP をアタッチしておけばいいのでは？ -> 今度は oci login が出来ない
+      * ephemeral Public IP をアタッチしておけばいいのでは？ -> 今度は oci login が出来ない
         * oci login は、ブラウザアクセスが必要そうだったので、全自動は無理そうでした
-    * oracle 純正の VM なら入っているのでは？ → 入ってませんでした。無料OSの中には該当なし
+    * Oracle 純正の VM なら入っているのでは？ → 入ってませんでした。無料OSの中には該当なし
 * 起動スクリプト作戦は、すべての選択肢で行き詰まってしまいました
 
 #### 作戦2 : 外でコマンド実行すればいいのでは？
@@ -122,7 +122,7 @@ resource "oci_core_public_ip" "test_public_ip" {
 #### 作戦3 : apply だけで完結をあきらめる → 採用
 * 発行済 IP のアタッチは OCI マネジメントコンソールで人がやる
 * その後、ssh ログインして、![`initial-setup.sh`](https://github.com/ys-nishida/proxy-on-oci/blob/main/proxy-vm/setup/initial-setup.sh) を動かしてセットアップを自動化させる
-  * 通常は ansible で記載する領域をシェルで実装
+  * 通常は Ansible で記載する領域をシェルで実装
 
 ## 認証プロキシ化は見送った
 * 無料で簡単に出来る範囲だと、Basic 認証を使う事になります
@@ -132,7 +132,7 @@ resource "oci_core_public_ip" "test_public_ip" {
 * 思いますが、利用者が子供です。操作を間違えて認証プロンプトが出てきた際、普通に PC の ID/PW を入力してしまうリスクの方が高いと考えて、認証機能は没にしました
 * 代わりに、入口と出口の2段で絞っています
   * 入口 : NSG で、自宅の IP から 10080 番宛の通信のみ許可
-  * 出口 : squid の whitelist で、接続先ドメインを限定
+  * 出口 : Squid の whitelist で、接続先ドメインを限定
 * 仮に踏み台にされても、YouTube 等にしか出られないので、攻撃者にとっての利用価値がありません
   * whitelist は、この希釈化のために設定しています
 
@@ -142,7 +142,7 @@ resource "oci_core_public_ip" "test_public_ip" {
 * `terraform apply` のみでセットアップ終了
   * 上記の"苦労したポイント"の通りですが、諦めました
 * フローログ取得
-  * 想定しているipからしか来てないことを定期的に確認しようと思いましたが、有料なので諦めました
+  * 想定している IP からしか来てないことを定期的に確認しようと思いましたが、有料なので諦めました
 
 # 最後に
 * OCI の Always Free は検証や DIY 用途には非常に有力なサービスなので、本当に感謝です🙌
