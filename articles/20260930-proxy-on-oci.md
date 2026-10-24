@@ -1,5 +1,5 @@
 ---
-title: "動画視聴制御 Proxy を OCI always free で作る"
+title: "動画視聴制御 Proxy を OCI Always Free で作る"
 emoji: "👦"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics:
@@ -13,12 +13,13 @@ published: false
 # はじめに
 * こちらの続編記事です
   * https://future-architect.github.io/articles/20250623a/
-* あれから1年近く経過し、Youtube を見るための儀式？は習慣化されたため、自動化する事にしました
+* あれから1年近く経過し、YouTube を見るための儀式？は習慣化されたため、自動化する事にしました
 
 # 本記事の概要
-* 要件 : 子供の youtube 視聴は『生活の最低限やるべきことをやってから』にしたい
-* 設計 : Pac で youtube の宛先を Proxy に設定して、その Proxy の起動/停止で見れる/見れないを制御する
-* 実装 : OCI Always free + HCP Terraform で無料＆簡単に運用
+* 要件 : 子供の YouTube 視聴は『生活の最低限やるべきことをやってから』にしたい
+* 設計 : PAC で YouTube の宛先を Proxy に設定して、その Proxy の起動/停止で見れる/見れないを制御する
+* 実装 : OCI Always Free + HCP Terraform で無料＆簡単に運用
+  * 悩んだ末、結果は『初回セットアップは一部手動、日々の運用は全自動』となっています
 
 # 書いた動機
 * 概ね『やるべきことをやる』を習慣化できた事、出社の日もある中で [前回記事](https://future-architect.github.io/articles/20250623a/) の手動運用が厳しくなってきた事で、自動化しようと思い始めました
@@ -26,10 +27,10 @@ published: false
 
 # 主な構成要素
 * あくまでも、無料の範囲内でやっています
-![Proxy setting](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/overview.png?raw=true)
+![overview](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/overview.png?raw=true)
 
 # 実装内容
-* PCの設定 : 前回記事と変わらず、プロキシに Pac ファイルを指定
+* PCの設定 : 前回記事と変わらず、プロキシに PAC ファイルを指定
 ![Proxy setting](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/PC_proxy_setting.png?raw=true)
 
 * PACファイルの内容
@@ -66,13 +67,18 @@ function FindProxyForURL(url, host)
 ```
 
 ### OCI 側の実装
+* OCI の VM の上に、docker コンテナで squid を構築。cron で compose up/down(19時-21時)しています
+```cron
+0 19 * * * ubuntu cd /home/ubuntu/proxy-on-oci/proxy-vm/docker-squid && /usr/bin/docker compose up -d
+0 21 * * * ubuntu cd /home/ubuntu/proxy-on-oci/proxy-vm/docker-squid && /usr/bin/docker compose down
+```
 * [こちら](https://github.com/ys-nishida/proxy-on-oci) に公開
-* Public IP が、VM の再作成に道連れをされて消されない様に、基底部分は `common` として分離させました。[詳細は後述](https://zenn.dev/nsd_yst/articles/20260930-proxy-on-oci#%E8%8B%A6%E5%8A%B4%E3%81%97%E3%81%9F%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88)
+* Public IP が、VM の再作成に道連れにされて消されない様に、基底部分は `common` として分離させました。[詳細は後述](#苦労したポイント)
   * 再作成を頻繁にするリソースを個別リソース、今回で言えば `proxy-vm` として切り出しています
 
 ### HCP Terraform の構成
 * 実装に合わせて、`common` と `proxy-vm` は、workspace を分離する形で構成しています
-  * ずっとローカル実行していた派閥なので、フォルダ分離だけでは出来なくて、各フォルダと worksace を揃えなければ同じ Project で構成できないことを知りました
+  * ずっとローカル実行していた派閥なので、フォルダを分けただけでは同じ Project に載らず、フォルダごとに workspace を作る必要があったことを知りました
   * variable は、どちらも利用するため、共通化しています（=分けるの面倒だった）
 
 ![HCP_Terraform_workspace](https://github.com/ys-nishida/tech-articles/blob/main/articles/data/20260930-proxy-on-oci/hcp_terraform_workspace.png?raw=true)
@@ -97,25 +103,25 @@ resource "oci_core_public_ip" "test_public_ip" {
 ```
 * 普通にコードを書くと、VM作成後に Public IP が作られる構造になります。よって、VM を削除すると public IP も巻き込まれて消える構造になっています
   * AWS/GCP と違って、**attachment リソースがない**ので巻き込まれて消えます
-* 業務でもこのユースケースはよくあり、困ったことがなかったのですが、OCI はなかなかに難しいですね
+* 業務でもこのユースケースはよくあり、AWS/GCP では困ったことがなかったのですが、OCI はなかなかに難しいですね
 
 #### 作戦1 : VM 作成時の起動スクリプト(user data)でコマンドでアタッチすればいいのでは？
-* 予約IPはアタッチせずに独立リソースにしておく。VM作成時のshでアタッチコマンドで自分でアタッチさせればいいのでは？ -> oci コマンドがインストールされていない！
+* 予約 IP を独立リソースにしておき、VM 起動時のスクリプトで自分にアタッチさせればいいのでは？ -> oci コマンドがインストールされていない！
     * oci をインストールするコマンドを先に入れる -> public ip が付与されていないのでインストールできない
       * NAT を作ればいいのでは？ -> 有料でした
       * ephemeral public IP をアタッチしておけばいいのでは？ -> 今度は oci login が出来ない
         * oci login は、ブラウザアクセスが必要そうだったので、全自動は無理そうでした
     * oracle 純正の VM なら入っているのでは？ → 入ってませんでした。無料OSの中には該当なし
-* 起動スクリプト作戦は、すべての選択肢で行き詰ってしまいました
+* 起動スクリプト作戦は、すべての選択肢で行き詰まってしまいました
 
-#### 作戦2 : 外でコマンド実行すればいいのでは？GHA とか
-* HCP Terraform が、任意のコマンドを打てない事も問題でした。なので、GHA で完結させる案も有力かもしれません
+#### 作戦2 : 外でコマンド実行すればいいのでは？
+* HCP Terraform が、任意のコマンドを打てない事も問題でした。なので、GitHub Actions(GHA) で完結させる案も有力かもしれません
 * GHA 使うなら、HCP Terraform を使う意味がなくなってきたので、趣旨から外れたため没にしました
 * が、結果的にはこの案が一番スマートだったかもしれません
 
 #### 作戦3 : apply だけで完結をあきらめる → 採用
 * 発行済 IP のアタッチは OCI マネジメントコンソールで人がやる
-* その後、ssh ログインして、`initial-setup.sh` を動かしてセットアップを自動化させる
+* その後、ssh ログインして、![`initial-setup.sh`](https://github.com/ys-nishida/proxy-on-oci/blob/main/proxy-vm/setup/initial-setup.sh) を動かしてセットアップを自動化させる
   * 通常は ansible で記載する領域をシェルで実装
 
 ## 認証プロキシ化は見送った
@@ -139,4 +145,5 @@ resource "oci_core_public_ip" "test_public_ip" {
   * 想定しているipからしか来てないことを定期的に確認しようと思いましたが、有料なので諦めました
 
 # 最後に
-* OCI の always free は検証や DIY 用途には非常に有力なサービスなので、本当に感謝です🙌
+* OCI の Always Free は検証や DIY 用途には非常に有力なサービスなので、本当に感謝です🙌
+* 出社して19時前に家にいない日はこれまで PAC ファイルを直接編集していましたが、その運用もなくなりました
