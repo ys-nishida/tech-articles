@@ -121,7 +121,7 @@ resource "oci_core_public_ip" "test_public_ip" {
 
 #### 作戦3 : apply だけで完結をあきらめる → 採用
 * 発行済 IP のアタッチは OCI マネジメントコンソールで人がやる
-* その後、ssh ログインして、![`initial-setup.sh`](https://github.com/ys-nishida/proxy-on-oci/blob/main/proxy-vm/setup/initial-setup.sh) を動かしてセットアップを自動化させる
+* その後、ssh ログインして、[`initial-setup.sh`](https://github.com/ys-nishida/proxy-on-oci/blob/main/proxy-vm/setup/initial-setup.sh) を動かしてセットアップを自動化させる
   * 通常は Ansible で記載する領域をシェルで実装
 
 ## 認証プロキシ化は見送った
